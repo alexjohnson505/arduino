@@ -1,6 +1,12 @@
+/*
+  
+  Alex Johnson & Amanda Yee
+  Physical Computing - Spring 2015
+  Bike Indicators
+  
+*/
 
 // Define PIN numbers
-
 #define button_left   11
 #define button_center 12
 #define button_right  13
@@ -13,12 +19,11 @@
 #define R_GREENPIN 9
 #define R_BLUEPIN  8 
 
-#define TONE 2
+#define TONE_PIN 2
 
 #define LED_MAX 250
 
 // Store the state of the program
-int index;
 int mode;
 
 // Record time
@@ -34,6 +39,7 @@ unsigned long modeStartedAt;
    1 = Right Turn (Blinking Red Right)
    2 = Stop (Solid Left/Right Red)
    3 = Hazards (Left/Right Blinking Red)
+
    
  */
 
@@ -56,9 +62,9 @@ void setup() {
 
   // Open Serial Communication
   Serial.begin(9600); 
-
-  // Init Counter.
-  index = 0;
+  
+  // Start global counter
+  time = 0;
 
   // Init mode
   mode = -1;
@@ -76,14 +82,78 @@ void loop() {
   int left[] = { 0, 0, 0 };
   int right[] = { 0, 0, 0 };
 
-  // Apply Changes to LEDs
-  refresh(left, right);
+  if (mode == -1 ) {
+    
+    left[0] = 0;
+    left[1] = 0;
+    left[3] = 0;
+    
+    right[0] = 0;
+    right[1] = 0;
+    right[2] = 0;
+
+  }
+  
+  // LEFT TURN
+  if (mode == 0) {
+    
+    left[0] = 255;
+    left[1] = 0;
+    left[3] = 0;
+    
+    right[0] = 0;
+    right[1] = 0;
+    right[2] = 0;
+    
+  }
+  
+  // RIGHT TURN
+  if (mode == 1) {
+    
+    left[0] = 0;
+    left[1] = 0;
+    left[3] = 0;
+    
+    right[0] = 255;
+    right[1] = 0;
+    right[2] = 0;
+    
+  }
+  
+  // STOP
+  if (mode == 2) {
+    
+    left[0] = 255;
+    left[1] = 0;
+    left[3] = 0;
+    
+    right[0] = 255;
+    right[1] = 0;
+    right[2] = 0;
+
+  }
+  
+  // HAZARDS
+  if (mode == 3) {
+    
+    left[0] = 255;
+    left[1] = 0;
+    left[3] = 0;
+    
+    right[0] = 255;
+    right[1] = 0;
+    right[2] = 0;
+
+  }
    
   // Notify user
-  // beep();
+  // beep(900, 30, 2000);
   
   // wait so as not to send massive amounts of data
-  delay(10);
+  // delay(10);
+
+  // Apply Changes to LEDs
+  refresh(left, right);
   
 }
 
@@ -99,10 +169,11 @@ void refresh(int left[], int right[]){
 }
 
 
-void beep(){
-  tone(2, 900);
-  delay(50);
-  noTone(2);
+void beep(int freq, int ms, int pause){
+  tone(TONE_PIN, freq);
+  delay(ms);
+  noTone(TONE_PIN);
+  delay(pause);
 }
 
 
