@@ -119,7 +119,7 @@ void loop() {
     left[0] = LED_MAX;
     
     // Blink state
-    if (modeStartedAt % 1000 > 500) {
+    if (blink(modeStartedAt)) {
       left[0] = 100;
       left[1] = 100;
     }
@@ -131,7 +131,7 @@ void loop() {
     right[0] = LED_MAX;
 
     // Blink state
-    if (modeStartedAt % 1000 > 500) {
+    if (blink(modeStartedAt)) {
       right[0] = 100;
       right[1] = 100;
     } 
@@ -153,7 +153,7 @@ void loop() {
     right[0] = LED_MAX;
 
     // Blink state
-    if (modeStartedAt % 1000 > 500) {
+    if (blink(modeStartedAt)) {
       left[0] = 0;
       right[0] = 0;
       
@@ -177,6 +177,7 @@ void loop() {
 
 // Apply Changes to LEDs
 void refresh(int left[], int right[]){
+  
   analogWrite(L_REDPIN,   left[0]);
   analogWrite(L_BLUEPIN,  left[1]);
   analogWrite(L_GREENPIN, left[2]);
@@ -194,6 +195,16 @@ void beep(int freq, int ms, int pause){
   delay(pause);
 }
 
+// Is it time for the second state yet?
+boolean blink(int clock){
+  
+  // Time since start of loop
+  int loop_time = BLINK_SPEED * 2;
+  
+  // Are we in the second state?
+  return (clock % loop_time > BLINK_SPEED);
+ 
+}
 
 
 
