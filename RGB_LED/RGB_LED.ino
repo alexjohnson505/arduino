@@ -23,12 +23,15 @@
 
 #define LED_MAX 250
 
+#define BLINK_SPEED 500
+
 // Store the state of the program
 int mode;
 
 // Record time
 unsigned long time;
 unsigned long modeStartedAt;
+unsigned long timeInMode;
 
 /*
  Mode Settings:
@@ -72,9 +75,33 @@ void setup() {
 }
 
 void loop() {
-
+  
   // Stores time since program has started
   time = millis();
+  
+  // Get button selected
+  if (true) {
+    
+    // mode = -1, 0, 1, 2, 3
+    modeStartedAt = time;
+    // beep(900, 30, 0);
+  }
+  
+  // Count ms in current mode
+  timeInMode = time - modeStartedAt;
+  
+  // Reset mode after 10 seconds
+  if (timeInMode > 1000 * 10) {
+
+    // Reset Mode
+     mode = -1;
+     
+     // Reset counter
+     modeStartedAt = time;
+     
+     // Alert user of change
+     beep(400, 30, 0);
+  }
 
   // Init LED values. Store each LED strip 
   // seperately as: { Red, Green, Blue }
@@ -82,67 +109,57 @@ void loop() {
   int left[] = { 0, 0, 0 };
   int right[] = { 0, 0, 0 };
 
+  // Do nothing
   if (mode == -1 ) {
-    
-    left[0] = 0;
-    left[1] = 0;
-    left[3] = 0;
-    
-    right[0] = 0;
-    right[1] = 0;
-    right[2] = 0;
-
   }
   
   // LEFT TURN
   if (mode == 0) {
     
-    left[0] = 255;
-    left[1] = 0;
-    left[3] = 0;
+    left[0] = LED_MAX;
     
-    right[0] = 0;
-    right[1] = 0;
-    right[2] = 0;
-    
+    // Blink state
+    if (modeStartedAt % 1000 > 500) {
+      left[0] = 100;
+      left[1] = 100;
+    }
   }
   
   // RIGHT TURN
   if (mode == 1) {
-    
-    left[0] = 0;
-    left[1] = 0;
-    left[3] = 0;
-    
-    right[0] = 255;
-    right[1] = 0;
-    right[2] = 0;
-    
+
+    right[0] = LED_MAX;
+
+    // Blink state
+    if (modeStartedAt % 1000 > 500) {
+      right[0] = 100;
+      right[1] = 100;
+    } 
   }
   
   // STOP
   if (mode == 2) {
     
-    left[0] = 255;
-    left[1] = 0;
-    left[3] = 0;
-    
-    right[0] = 255;
-    right[1] = 0;
-    right[2] = 0;
+    left[0] = LED_MAX;
+    right[0] = LED_MAX;
 
   }
   
   // HAZARDS
   if (mode == 3) {
     
-    left[0] = 255;
-    left[1] = 0;
-    left[3] = 0;
+    left[0] = LED_MAX;
     
-    right[0] = 255;
-    right[1] = 0;
-    right[2] = 0;
+    right[0] = LED_MAX;
+
+    // Blink state
+    if (modeStartedAt % 1000 > 500) {
+      left[0] = 0;
+      right[0] = 0;
+      
+      left[2] = LED_MAX;
+      right[2] = LED_MAX;
+    } 
 
   }
    
@@ -150,7 +167,8 @@ void loop() {
   // beep(900, 30, 2000);
   
   // wait so as not to send massive amounts of data
-  // delay(10);
+  // Each loop = 1/5s
+  delay(200);
 
   // Apply Changes to LEDs
   refresh(left, right);
