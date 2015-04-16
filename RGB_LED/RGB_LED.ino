@@ -13,28 +13,33 @@
 #define R_GREENPIN 9
 #define R_BLUEPIN  8 
 
-#define maxVal 250
+#define TONE 2
 
+#define LED_MAX 250
+
+// Store the state of the program
 int index;
 int mode;
+
+// Record time
 unsigned long time;
 unsigned long modeStartedAt;
 
 /*
-  
  Mode Settings:
  mode can be one of:
  
- -1 = Waiting
- 0 = Left Turn
- 1 = Right Turn
- 2 = Stop
- 3 = Hazards
+   -1 = Waiting
+   0 = Left Turn (Blinking Red Left)
+   1 = Right Turn (Blinking Red Right)
+   2 = Stop (Solid Left/Right Red)
+   3 = Hazards (Left/Right Blinking Red)
+   
  */
 
 void setup() {
 
-  // Define Input PINS
+  // Define Button PINS
   pinMode(button_left, INPUT);    
   pinMode(button_center, INPUT);    
   pinMode(button_right, INPUT);    
@@ -65,100 +70,41 @@ void loop() {
   // Stores time since program has started
   time = millis();
 
-  // Init LED values
-  int L_REDVAL = 0;
-  int L_GREENVAL = 0;
-  int L_BLUEVAL = 0;
-  int R_REDVAL = 0;
-  int R_GREENVAL = 0;
-  int R_BLUEVAL = 0;
-
-  // Watch buttons
-  if (digitalRead(button_left) == HIGH) {     
-
-    // Toggle Next Mode
-    mode = mode + 1;
-    mode = mode % 4;
-
-    modeStartedAt = time;
-
-    // Serial.println("Mode Updated:");
-    // Serial.println(mode);
-    Serial.println(mode);
-
-  } 
-  else {
-
-  }
-
-
-  // Off
-  if (mode == -1){
-  }
-
-  // Left Turn
-  if (mode == 0){
-
-    // 10s limit
-    if (time - modeStartedAt > 10000){
-      mode = -1;
-    }
-
-    L_REDVAL = maxVal;
-    R_REDVAL = maxVal;
-
-    // if (time % 1000 > 500){
-    //    L_REDVAL = maxVal;
-    // } else {
-    //    L_REDVAL = 0;
-    //}
-  }
-
-  // Right Turn
-  if (mode == 1){
-
-    // 10s limit
-    if (time - modeStartedAt > 10000){
-      mode = -1;
-    }
-
-    if (time % 1000 > 500){
-      L_BLUEVAL = maxVal;
-      R_BLUEVAL = maxVal;
-    } 
-    else {
-      L_BLUEVAL = 0;
-      R_BLUEVAL = 0;
-    }
-  }
-
-  // Stop
-  if (mode == 2){
-    L_BLUEVAL = maxVal;
-    R_BLUEVAL = maxVal;
-  }
-
-  // Hazards
-  if (mode == 3){
-    L_REDVAL = 155;
-    L_BLUEVAL = 155;
-    L_GREENVAL = 155;
-    R_REDVAL = 155;
-    R_BLUEVAL = 155;
-    R_GREENVAL = 155;
-  }
+  // Init LED values. Store each LED strip 
+  // seperately as: { Red, Green, Blue }
+  
+  int left[] = { 0, 0, 0 };
+  int right[] = { 0, 0, 0 };
 
   // Apply Changes to LEDs
-  analogWrite(L_REDPIN,   L_REDVAL);
-  analogWrite(L_BLUEPIN,  L_BLUEVAL);
-  analogWrite(L_GREENPIN, L_GREENVAL);
-  analogWrite(R_REDPIN,   R_REDVAL);
-  analogWrite(R_BLUEPIN,  R_BLUEVAL);
-  analogWrite(R_GREENPIN, R_GREENVAL);
-
-  // wait a second so as not to send massive amounts of data
-  delay(400);
-
+  refresh(left, right);
+   
+  // Notify user
+  // beep();
+  
+  // wait so as not to send massive amounts of data
+  delay(10);
+  
 }
+
+// Apply Changes to LEDs
+void refresh(int left[], int right[]){
+  analogWrite(L_REDPIN,   left[0]);
+  analogWrite(L_BLUEPIN,  left[1]);
+  analogWrite(L_GREENPIN, left[2]);
+  
+  analogWrite(R_REDPIN,   right[0]);
+  analogWrite(R_BLUEPIN,  right[1]);
+  analogWrite(R_GREENPIN, right[2]);
+}
+
+
+void beep(){
+  tone(2, 900);
+  delay(50);
+  noTone(2);
+}
+
+
 
 
