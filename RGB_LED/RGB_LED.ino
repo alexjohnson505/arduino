@@ -3,13 +3,24 @@
   Alex Johnson & Amanda Yee
   Physical Computing - Spring 2015
   Bike Indicators
-  
+
+  Goal: Designed to operate on a set
+  of LEDS attached to the back of a 
+  bike. Using buttons, toggle between
+  modes of LED output. Mode are:
+
+     -1 = Waiting
+     0 = Left Turn (Blinking Red Left)
+     1 = Right Turn (Blinking Red Right)
+     2 = Stop (Solid Left/Right Red)
+     3 = Hazards (Left/Right Blinking Red)
+
 */
 
 // Define PIN numbers
-#define button_left   11
-#define button_center 12
-#define button_right  13
+#define BUTTON_LEFT   11
+#define BUTTON_CENTER 12
+#define BUTTON_RIGHT  13
 
 #define L_REDPIN   7
 #define L_GREENPIN 6
@@ -21,37 +32,29 @@
 
 #define TONE_PIN 2
 
-#define LED_MAX 250
+#define LED_MAX 150
 
-#define BLINK_SPEED 500
+#define BLINK_SPEED 400
 
 // Store the state of the program
 int mode;
 
-// Record time
+// milliseconds since program run
 unsigned long time;
+
+// milliseconds at which the mode started
 unsigned long modeStartedAt;
+
+// millisenconds since the last mode change
 unsigned long timeInMode;
 
-/*
- Mode Settings:
- mode can be one of:
- 
-   -1 = Waiting
-   0 = Left Turn (Blinking Red Left)
-   1 = Right Turn (Blinking Red Right)
-   2 = Stop (Solid Left/Right Red)
-   3 = Hazards (Left/Right Blinking Red)
-
-   
- */
-
+// Initialize the program
 void setup() {
 
   // Define Button PINS
-  pinMode(button_left, INPUT);    
-  pinMode(button_center, INPUT);    
-  pinMode(button_right, INPUT);    
+  pinMode(BUTTON_LEFT, INPUT);    
+  pinMode(BUTTON_CENTER, INPUT);    
+  pinMode(BUTTON_RIGHT, INPUT);    
 
   // Define Left LED Pins
   pinMode(L_REDPIN, OUTPUT);
@@ -76,9 +79,42 @@ void setup() {
 
 void loop() {
   
-  // Stores time since program has started
+  // update milliseconds 
+  // since program started
   time = millis();
+
+
+  // read the button state
+  left_turn  = digitalRead(BUTTON_LEFT);
+  right_turn = digitalRead(BUTTON_RIGHT);
+  stop       = digitalRead(BUTTON_CENTER);
   
+  // Did the user press "left turn"?
+  if (left_turn == HIGH) {   
+    mode = 0;
+    beep(900, 30, 0);
+
+  }
+
+  // Did the user press "right turn"?
+  if (right_turn == HIGH) {     
+    mode = 1;
+    beep(900, 30, 0);
+
+  }
+
+  // Did the user press "stop"?
+  if (stop == HIGH) {    
+      mode = 2;
+      beep(900, 30, 0);
+  }
+
+  // Did the user HOLD "stop"
+  if (stop == HIGH && mode == 2) {  
+      mode = 3;
+      beep(900, 60, 0);
+  }
+
   // Get button selected
   if (true) {
     
@@ -87,7 +123,7 @@ void loop() {
     // beep(900, 30, 0);
   }
   
-  // Count ms in current mode
+  // milliseconds in current mode
   timeInMode = time - modeStartedAt;
   
   // Reset mode after 10 seconds
@@ -111,6 +147,8 @@ void loop() {
 
   // Do nothing
   if (mode == -1 ) {
+    left[2] = 100;
+    right[2] = 100;
   }
   
   // LEFT TURN
@@ -164,12 +202,17 @@ void loop() {
   }
    
   // Notify user
-  // beep(900, 30, 2000);
+  beep(900, 30, 2000);
   
   // wait so as not to send massive amounts of data
-  // Each loop = 1/5s
-  delay(200);
-
+  // Each loop = 1/10 seconds
+  delay(100);
+  
+  String output;
+  output = mode + " Mode";
+  Serial.println(output);
+  // @TODO: WTF Arduino
+  
   // Apply Changes to LEDs
   refresh(left, right);
   
