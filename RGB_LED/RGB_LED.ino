@@ -18,19 +18,19 @@
 */
 
 // Define PIN numbers
-#define BUTTON_LEFT   11
-#define BUTTON_CENTER 12
-#define BUTTON_RIGHT  13
+#define BUTTON_LEFT   3 // blue
+#define BUTTON_CENTER 4 // green
+#define BUTTON_RIGHT  5 // orange
 
-#define L_REDPIN   7
-#define L_GREENPIN 6
-#define L_BLUEPIN  5
+#define L_REDPIN   8
+#define L_GREENPIN 7
+#define L_BLUEPIN  6
 
-#define R_REDPIN   10
-#define R_GREENPIN 9
-#define R_BLUEPIN  8 
+#define R_REDPIN   12 
+#define R_GREENPIN 10
+#define R_BLUEPIN  11
 
-#define TONE_PIN 2
+#define TONE_PIN 22 // brown
 
 #define LED_MAX 150
 
@@ -82,62 +82,73 @@ void loop() {
   // update milliseconds 
   // since program started
   time = millis();
-
+  
+  int left_turn = 0;
+  int stop_turn = 0;
+  int right_turn = 0;
 
   // read the button state
   left_turn  = digitalRead(BUTTON_LEFT);
+  stop_turn  = digitalRead(BUTTON_CENTER);
   right_turn = digitalRead(BUTTON_RIGHT);
-  stop       = digitalRead(BUTTON_CENTER);
   
-  // Did the user press "left turn"?
-  if (left_turn == HIGH) {   
-    mode = 0;
-    beep(900, 30, 0);
+  String output = "( " + String(left_turn) + " , " + String(stop_turn) + " , " + String(right_turn) + " )";
+  Serial.println(output);
 
-  }
+
+  // Did the user press "left turn"?
+//  if (left_turn == HIGH) {   
+//    Serial.println("LEFT BUTTON");
+//     mode = 0;
+//    beep(900, 30, 0);
+//
+//  }
 
   // Did the user press "right turn"?
-  if (right_turn == HIGH) {     
-    mode = 1;
-    beep(900, 30, 0);
-
-  }
+//  if (right_turn == HIGH) {     
+//    Serial.println("RIGHT BUTTON");
+//     mode = 1;
+//    beep(900, 30, 0);
+//
+//  }
 
   // Did the user press "stop"?
-  if (stop == HIGH) {    
-      mode = 2;
-      beep(900, 30, 0);
-  }
+//  if (stop == HIGH) {    
+//    Serial.println("CENTER BUTTON");
+//      mode = 2;
+//      beep(900, 30, 0);
+//  }
 
   // Did the user HOLD "stop"
-  if (stop == HIGH && mode == 2) {  
-      mode = 3;
-      beep(900, 60, 0);
-  }
+//  if (stop == HIGH && mode == 2) {  
+//     Serial.println("CENTER BUTTON HOLD");
+//      mode = 3;
+//      beep(900, 60, 0);
+//  }
 
   // Get button selected
-  if (true) {
+//  if (true) {
     
-    // mode = -1, 0, 1, 2, 3
-    modeStartedAt = time;
+//    mode = -1;
+//    modeStartedAt = time;
     // beep(900, 30, 0);
-  }
+//  }
   
   // milliseconds in current mode
   timeInMode = time - modeStartedAt;
   
   // Reset mode after 10 seconds
-  if (timeInMode > 1000 * 10) {
-
-    // Reset Mode
-     mode = -1;
-     
-     // Reset counter
-     modeStartedAt = time;
-     
-     // Alert user of change
-     beep(400, 30, 0);
-  }
+//  if (timeInMode > 1000 * 10) {
+//
+//    // Reset Mode
+//     mode = -1;
+//     
+//     // Reset counter
+//     modeStartedAt = time;
+//     
+//     // Alert user of change
+//     beep(400, 30, 0);
+//  }
 
   // Init LED values. Store each LED strip 
   // seperately as: { Red, Green, Blue }
@@ -166,7 +177,7 @@ void loop() {
   // RIGHT TURN
   if (mode == 1) {
 
-    right[0] = LED_MAX;
+    right[0] = 200;
 
     // Blink state
     if (blink(modeStartedAt)) {
@@ -202,19 +213,21 @@ void loop() {
   }
    
   // Notify user
-  beep(900, 30, 2000);
+  // beep(900, 20, 2000);
   
   // wait so as not to send massive amounts of data
   // Each loop = 1/10 seconds
-  delay(100);
+   delay(200);
   
-  String output;
-  output = mode + " Mode";
-  Serial.println(output);
+//  String output;
+//  output = "Mode " + String(mode);
+//  Serial.println(output);
   // @TODO: WTF Arduino
   
   // Apply Changes to LEDs
   refresh(left, right);
+//   beep(900, 30, 0);
+  
   
 }
 
