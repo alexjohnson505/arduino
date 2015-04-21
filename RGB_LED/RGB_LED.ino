@@ -18,9 +18,9 @@
 */
 
 // Define PIN numbers
-#define BUTTON_LEFT   3 // blue
-#define BUTTON_CENTER 4 // green
-#define BUTTON_RIGHT  5 // orange
+#define BUTTON_LEFT   2 // blue
+#define BUTTON_CENTER 3 // green
+#define BUTTON_RIGHT  4 // orange
 
 #define L_REDPIN   8
 #define L_GREENPIN 7
