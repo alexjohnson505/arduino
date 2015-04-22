@@ -22,13 +22,13 @@
 #define BUTTON_CENTER 3 // green
 #define BUTTON_RIGHT  4 // orange
 
-#define L_REDPIN   8
-#define L_GREENPIN 7
-#define L_BLUEPIN  6
+#define L_REDPIN   11
+#define L_GREENPIN 10
+#define L_BLUEPIN  36 // ingore
 
-#define R_REDPIN   12 
-#define R_GREENPIN 10
-#define R_BLUEPIN  11
+#define R_REDPIN   8
+#define R_GREENPIN 7
+#define R_BLUEPIN  37 // ignore
 
 #define TONE_PIN 22 // brown
 
@@ -233,6 +233,8 @@ void loop() {
 
 // Apply Changes to LEDs
 void refresh(int left[], int right[]){
+   
+  analogWrite(13, 250);
   
   analogWrite(L_REDPIN,   left[0]);
   analogWrite(L_BLUEPIN,  left[1]);
