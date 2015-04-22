@@ -83,14 +83,12 @@ void loop() {
   // since program started
   time = millis();
   
-  int left_turn = 0;
-  int stop_turn = 0;
-  int right_turn = 0;
+  int buttons[] = { 0, 0, 0 };
 
   // read the button state
-  left_turn  = digitalRead(BUTTON_LEFT);
-  stop_turn  = digitalRead(BUTTON_CENTER);
-  right_turn = digitalRead(BUTTON_RIGHT);
+  buttons[0]  = digitalRead(BUTTON_LEFT);
+  buttons[1]  = digitalRead(BUTTON_CENTER);
+  buttons[2] = digitalRead(BUTTON_RIGHT);
   
   String output = "( " + String(left_turn) + " , " + String(stop_turn) + " , " + String(right_turn) + " )";
   Serial.println(output);
