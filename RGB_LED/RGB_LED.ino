@@ -109,8 +109,16 @@ void loop() {
     beep(900, 10, 0);
   }
 
+  // Did the user HOLD "stop"
+  if (buttons[1] == HIGH && mode == 2) {
+    
+     Serial.println("CENTER BUTTON HOLD");
+     mode = 3;
+     beep(900, 90, 0);
+  }
+  
   // Did the user press "stop"?
-  if (buttons[1] == HIGH) {    
+  if (buttons[1] == HIGH && mode != 3) {    
     
     // Reset counter
     modeStartedAt = time;
@@ -118,14 +126,6 @@ void loop() {
     Serial.println("CENTER BUTTON");
     mode = 2;
     beep(500, 20, 0);
-  }
-
-  // Did the user HOLD "stop"
-  if (buttons[1] == HIGH && mode == 2) {
-    
-     Serial.println("CENTER BUTTON HOLD");
-     mode = 3;
-     beep(900, 90, 0);
   }
   
   // milliseconds in current mode
@@ -155,15 +155,12 @@ void loop() {
 
   // Default
   if (mode == -1 ) {
-    Serial.println("ZERO MODE");
     
-    left[0] = LED_MAX;
-    left[1] = LED_MAX;
-    left[2] = LED_MAX;
+    left[0] = 100;
+    left[1] = 100;
     
-    right[0] = LED_MAX;
+    right[0] = 100;
     right[1] = 100;
-    right[2] = LED_MAX;
   }
   
   // LEFT TURN
@@ -201,17 +198,19 @@ void loop() {
   // HAZARDS
   if (mode == 3) {
     
-    left[0] = LED_MAX;
+    left[0] = 100;
+    left[1] = 100;
     
-    right[0] = LED_MAX;
+    right[0] = 100;
+    right[1] = 100;
 
     // Blink state
     if (blink(modeStartedAt)) {
       left[0] = 0;
       right[0] = 0;
       
-      left[2] = LED_MAX;
-      right[2] = LED_MAX;
+      left[1] = LED_MAX;
+      right[1] = LED_MAX;
     } 
 
   }
@@ -235,10 +234,10 @@ void refresh(int left[], int right[]){
   analogWrite(13, 250);
   
   analogWrite(L_REDPIN,   left[0]);
-  analogWrite(L_GREENPIN, left[2]);
+  analogWrite(L_GREENPIN, left[1]);
   
   analogWrite(R_REDPIN,   right[0]);
-  analogWrite(R_GREENPIN, right[2]);
+  analogWrite(R_GREENPIN, right[1]);
 }
 
 
