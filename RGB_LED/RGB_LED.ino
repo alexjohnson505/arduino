@@ -18,21 +18,25 @@
 */
 
 // Define PIN numbers
+#define BUTTON_LEFT   2 // LEFT: blue
+#define BUTTON_CENTER 3 // STOP: green
+#define BUTTON_RIGHT  4 // RIGHT: orange
 
-#define BUTTON_LEFT   2 // blue
-#define BUTTON_CENTER 3 // green
-#define BUTTON_RIGHT  4 // orange
-
+// Beeper
 #define TONE_PIN 22 // brown
 
+// Left Arrow
 #define L_REDPIN   11
 #define L_GREENPIN 10
 
+// Right Arrow
 #define R_REDPIN   8
 #define R_GREENPIN 7
 
+// Max value for LED
 #define LED_MAX 200
 
+// ms between blinks
 #define BLINK_SPEED 400
 
 // Store the state of the program
@@ -46,6 +50,9 @@ unsigned long modeStartedAt;
 
 // millisenconds since the last mode change
 unsigned long timeInMode;
+
+// blink this round?
+boolean blink;
 
 // Initialize the program
 void setup() {
@@ -71,6 +78,9 @@ void setup() {
 
   // Init mode
   mode = -1;
+  
+  // Init blink
+  blink = false;
 
 }
 
@@ -80,6 +90,11 @@ void loop() {
   // since program started
   time = millis();
   
+  /****************************
+            INPUT
+   ****************************/
+    
+  // What buttons are selected
   int buttons[] = { 0, 0, 0 };
 
   // read the button state
@@ -87,6 +102,10 @@ void loop() {
   buttons[1]  = digitalRead(BUTTON_CENTER);
   buttons[2]  = digitalRead(BUTTON_RIGHT);
 
+  /****************************
+           SET MODE
+   ****************************/
+   
   // Did the user press "left turn"?
   if (buttons[0] == HIGH) {   
 
@@ -128,6 +147,10 @@ void loop() {
     beep(500, 20, 0);
   }
   
+  /****************************
+        TIME COUNTING
+   ****************************/
+   
   // milliseconds in current mode
   timeInMode = time - modeStartedAt;
   
@@ -147,20 +170,23 @@ void loop() {
      beep(400, 60, 0);
   }
 
-  // Init LED values. Store each LED strip 
-  // seperately as: { Red, Green, Blue }
+  /****************************
+        ADJUST LEDs
+   ****************************/
   
+  // Init LED values. Store each LED strip 
+  // seperately as: { Red, Green, Blue } 
   int left[] = { 0, 0, 0 };
   int right[] = { 0, 0, 0 };
-
+   
   // Default
   if (mode == -1 ) {
     
-    left[0] = 100;
-    left[1] = 100;
+    left[0] = 50;
+    left[1] = 50;
     
-    right[0] = 100;
-    right[1] = 100;
+    right[0] = 50;
+    right[1] = 50;
   }
   
   // LEFT TURN
@@ -169,7 +195,7 @@ void loop() {
     left[0] = LED_MAX;
     
     // Blink state
-    if (blink(modeStartedAt)) {
+    if (blink) {
       left[0] = 100;
       left[1] = 100;
     }
@@ -181,7 +207,7 @@ void loop() {
     right[0] = LED_MAX;
     
     // Blink state
-    if (blink(modeStartedAt)) {
+    if (blink) {
       right[0] = 100;
       right[1] = 100;
     } 
@@ -205,7 +231,7 @@ void loop() {
     right[1] = 100;
 
     // Blink state
-    if (blink(modeStartedAt)) {
+    if (blink) {
       left[0] = 0;
       right[0] = 0;
       
@@ -215,9 +241,15 @@ void loop() {
 
   }
 
-  // Debug  
-  String output = "( " + String(buttons[0]) + " , " + String(buttons[1]) + " , " + String(buttons[2]) + " ) | Mode: " + String(mode);
+  /****************************
+           DEBUGGING
+   ****************************/
+   
+  String output = "( " + String(buttons[0]) + " , " + String(buttons[1]) + " , " + String(buttons[2]) + " ) | Mode: " + String(mode) + " | Time in Mode: " + String(timeInMode);
   Serial.println(output);
+  
+  // blink change
+  blink = !blink;
   
   // wait so as not to send massive amounts of data
   // Each loop = 1/10 seconds
@@ -228,36 +260,25 @@ void loop() {
   
 }
 
-// Apply Changes to LEDs
-void refresh(int left[], int right[]){
+
+/****************************
+        ADJUST LEDs
+ ****************************/
    
-  analogWrite(13, 250);
-  
+void refresh(int left[], int right[]){  
   analogWrite(L_REDPIN,   left[0]);
   analogWrite(L_GREENPIN, left[1]);
-  
   analogWrite(R_REDPIN,   right[0]);
   analogWrite(R_GREENPIN, right[1]);
 }
 
-
+/****************************
+          BEEP
+ ****************************/
+   
 void beep(int freq, int ms, int pause){
   tone(TONE_PIN, freq);
   delay(ms);
   noTone(TONE_PIN);
   delay(pause);
 }
-
-// Is it time for the second state yet?
-boolean blink(int clock){
-  
-  // Time since start of loop
-  int loop_time = BLINK_SPEED * 2;
-  
-  // Are we in the second state?
-  return ((clock % loop_time) > BLINK_SPEED);
- 
-}
-
-
-
