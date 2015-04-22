@@ -196,8 +196,8 @@ void loop() {
     
     // Blink state
     if (blink) {
-      left[0] = 100;
-      left[1] = 100;
+      left[0] = 200;
+      left[1] = LED_MAX;
     }
   }
   
@@ -208,8 +208,8 @@ void loop() {
     
     // Blink state
     if (blink) {
-      right[0] = 100;
-      right[1] = 100;
+      right[0] = 200;
+      right[1] = LED_MAX;
     } 
   }
   
@@ -224,16 +224,14 @@ void loop() {
   // HAZARDS
   if (mode == 3) {
     
-    left[0] = 100;
-    left[1] = 100;
-    
-    right[0] = 100;
-    right[1] = 100;
+    left[0] = LED_MAX;
+    right[0] = LED_MAX;
 
     // Blink state
     if (blink) {
-      left[0] = 0;
-      right[0] = 0;
+      
+      left[0] = 150;
+      right[0] = 150;
       
       left[1] = LED_MAX;
       right[1] = LED_MAX;
