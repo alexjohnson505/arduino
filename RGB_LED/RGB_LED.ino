@@ -12,8 +12,7 @@
      -1 = Waiting
      0 = Left Turn (Blinking Red Left)
      1 = Right Turn (Blinking Red Right)
-     2 = Stop (Solid Left/Right Red)
-     3 = Hazards (Left/Right Blinking Red)
+     2 = Hazards (Left/Right Blinking Red)
 
 */
 
@@ -23,7 +22,7 @@
 #define BUTTON_RIGHT  4 // RIGHT: orange
 
 // Beeper
-#define TONE_PIN 22 // brown
+#define TONE_PIN 5 // brown
 
 // Left Arrow
 #define L_REDPIN   11
@@ -34,10 +33,7 @@
 #define R_GREENPIN 7
 
 // Max value for LED
-#define LED_MAX 200
-
-// ms between blinks
-#define BLINK_SPEED 400
+#define LED_MAX 250
 
 // Store the state of the program
 int mode;
@@ -114,7 +110,7 @@ void loop() {
      
     Serial.println("LEFT BUTTON");
     mode = 0;
-    beep(900, 10, 0);
+    beep(1200, 30, 0);
   }
 
   // Did the user press "right turn"?
@@ -125,26 +121,27 @@ void loop() {
     
     Serial.println("RIGHT BUTTON");
     mode = 1;
-    beep(900, 10, 0);
-  }
-
-  // Did the user HOLD "stop"
-  if (buttons[1] == HIGH && mode == 2) {
-    
-     Serial.println("CENTER BUTTON HOLD");
-     mode = 3;
-     beep(900, 90, 0);
+    beep(1200, 30, 0);
   }
   
-  // Did the user press "stop"?
-  if (buttons[1] == HIGH && mode != 3) {    
+  // Did the user press "reset"?
+  if (buttons[1] == HIGH) {    
     
     // Reset counter
     modeStartedAt = time;
     
-    Serial.println("CENTER BUTTON");
-    mode = 2;
-    beep(500, 20, 0);
+    Serial.println("RESET");
+    mode = -1;
+    beep(1200, 60, 0);
+  }
+  
+  // Did the user HOLD "stop"
+  if (buttons[1] == HIGH && mode == -1) {
+    
+     Serial.println("CENTER BUTTON HOLD");
+     mode = 2;
+     beep(600, 90, 60);
+     beep(600, 90, 0);
   }
   
   /****************************
@@ -167,7 +164,7 @@ void loop() {
      modeStartedAt = time;
      
      // Alert user of change
-     beep(400, 60, 0);
+     beep(800, 90, 0);
   }
 
   /****************************
@@ -198,6 +195,7 @@ void loop() {
     if (blink) {
       left[0] = 200;
       left[1] = LED_MAX;
+      beep(400, 30, 0);
     }
   }
   
@@ -210,6 +208,7 @@ void loop() {
     if (blink) {
       right[0] = 200;
       right[1] = LED_MAX;
+      beep(400, 30, 0);
     } 
   }
   
@@ -235,6 +234,8 @@ void loop() {
       
       left[1] = LED_MAX;
       right[1] = LED_MAX;
+      
+      beep(900, 60, 0);
     } 
 
   }
