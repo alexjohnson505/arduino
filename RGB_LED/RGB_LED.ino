@@ -13,6 +13,16 @@
      0 = Left Turn (Blinking Red Left)
      1 = Right Turn (Blinking Red Right)
      2 = Hazards (Left/Right Blinking Red)
+     
+  The left and right buttons activate the
+  corresponding turn signal. These turn signals
+  will automatically turn off after 10 seconds.
+  
+  The center button, when pressed will reset
+  the current mode to the default "waiting"
+  status. A long-press will active HAZARDS mode,
+  enabling a state where both LED arrows blink
+  until the user de-activates the state.
 
 */
 
@@ -22,7 +32,7 @@
 #define BUTTON_RIGHT  4 // RIGHT  (orange)
 
 // Beeper
-#define TONE_PIN 5 // brown
+#define TONE_PIN 5 // (brown)
 
 // Left Arrow
 #define L_REDPIN   11
@@ -45,8 +55,7 @@ unsigned long time;
 unsigned long modeStartedAt;
 
 // millisenconds since the last mode change
-// Used for resetting turn indicators
-// after 10 seconds
+// Used for resetting turn indicators after 10s
 unsigned long timeInMode;
 
 // For the turn indicators, alternate
@@ -96,8 +105,9 @@ void loop() {
   // milliseconds in current mode
   timeInMode = time - modeStartedAt;
   
-  // Reset mode after 10 seconds
-  if ((timeInMode > 1000 * 10) && (mode != -1)) {
+  // Reset turn indicators after
+  // a total of ten seconds have passed
+  if ((timeInMode > 1000 * 10) && (mode == 0 || mode == 1 )) {
     
     // Debug
     Serial.println("10 Seconds in mode. Resetting.");
@@ -152,9 +162,9 @@ void loop() {
     beep(1200, 30, 0);
   }
   
-  // Did the user HOLD "stop". 
-  // "hazards mode" (2) uses a 1,000 ms press
-  // of the stop button, requires the following conditions
+  // Did the user HOLD "stop"?
+  // "HAZARDS" mode (2) uses a 1 second press of the
+  // stop button, and requires the following conditions
   //  - Middle button pressed
   //  - Not currently turning
   //  - Pressed for at least 1 second
@@ -162,7 +172,7 @@ void loop() {
   if (buttons[1] == HIGH && mode == -1 && timeInMode > 1000) {
   
      // Change Mode
-     Serial.println("CENTER BUTTON HOLD");
+     Serial.println("HAZARDS");
      mode = 2;
      
      // Double Beep
@@ -190,7 +200,8 @@ void loop() {
   int left[] = { 0, 0, 0 };
   int right[] = { 0, 0, 0 };
    
-  // Default
+  // Default.
+  // Gentle yellow "running lights"
   if (mode == -1 ) {
     
     left[0] = 50;
@@ -201,12 +212,14 @@ void loop() {
   }
   
   // LEFT TURN
+  // Left arrow blinks between red and yellow
   if (mode == 0) {
     
     left[0] = LED_MAX;
     
     // Blink state
     if (blink) {
+      
       left[0] = 200;
       left[1] = LED_MAX;
       beep(400, 30, 0);
@@ -214,27 +227,23 @@ void loop() {
   }
   
   // RIGHT TURN
+  // Right arrow blinks between red and yellow
   if (mode == 1) {
 
     right[0] = LED_MAX;
     
     // Blink state
     if (blink) {
+      
       right[0] = 200;
       right[1] = LED_MAX;
       beep(400, 30, 0);
     } 
   }
   
-  // STOP
-  if (mode == 2) {
-    
-    left[0] = LED_MAX;
-    right[0] = LED_MAX;
-
-  }
-  
   // HAZARDS
+  // Both arrows blink between
+  // red and yellow
   if (mode == 2) {
     
     left[0] = LED_MAX;
@@ -250,23 +259,26 @@ void loop() {
     } 
 
   }
-
-  /****************************
-           DEBUGGING
-   ****************************/
-   
-  String output = "( " + String(buttons[0]) + " , " + String(buttons[1]) + " , " + String(buttons[2]) + " ) | Mode: " + String(mode) + " | Time in Mode: " + String(timeInMode);
-  Serial.println(output);
   
-  // blink change
+  // blink change.
+  // Alternate between loops
   blink = !blink;
-  
-  // wait so as not to send massive amounts of data
-  // Each loop = 1/10 seconds
+
+  // Each loop = 2/5 of a second
+  // Slow the iteration speed, as to
+  // simplify the button, beeping, and
+  // blinking logic.
   delay(400);
     
   // Apply Changes to LEDs
   refresh(left, right);
+  
+  /****************************
+           DEBUGGING
+   ****************************/
+   
+  // String output = "( " + String(buttons[0]) + " , " + String(buttons[1]) + " , " + String(buttons[2]) + " ) | Mode: " + String(mode) + " | Time in Mode: " + String(timeInMode);
+  // Serial.println(output);
   
 }
 
@@ -274,7 +286,8 @@ void loop() {
 /****************************
         ADJUST LEDs
  ****************************/
-   
+
+// Apply changes to LED output
 void refresh(int left[], int right[]){  
   analogWrite(L_REDPIN,   left[0]);
   analogWrite(L_GREENPIN, left[1]);
@@ -285,7 +298,11 @@ void refresh(int left[], int right[]){
 /****************************
           BEEP
  ****************************/
-   
+// Produce a sound.
+//  - freq = pitch of sound
+//  - ms   = length of sound
+//  - puse = delay after sound
+
 void beep(int freq, int ms, int pause){
   tone(TONE_PIN, freq);
   delay(ms);
