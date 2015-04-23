@@ -7,7 +7,7 @@
   Goal: Designed to operate on a set
   of LEDS attached to the back of a 
   bike. Using buttons, toggle between
-  modes of LED output. Mode are:
+  modes of LED output. Modes are:
 
      -1 = Waiting
      0 = Left Turn (Blinking Red Left)
@@ -17,9 +17,9 @@
 */
 
 // Define PIN numbers
-#define BUTTON_LEFT   2 // LEFT: blue
-#define BUTTON_CENTER 3 // STOP: green
-#define BUTTON_RIGHT  4 // RIGHT: orange
+#define BUTTON_LEFT   2 // LEFT   (blue)
+#define BUTTON_CENTER 3 // RESET  (green)
+#define BUTTON_RIGHT  4 // RIGHT  (orange)
 
 // Beeper
 #define TONE_PIN 5 // brown
@@ -35,19 +35,22 @@
 // Max value for LED
 #define LED_MAX 250
 
-// Store the state of the program
+// Current mode
 int mode;
 
-// milliseconds since program run
+// time in ms since program run
 unsigned long time;
 
-// milliseconds at which the mode started
+// time in ms at which the current mode began
 unsigned long modeStartedAt;
 
 // millisenconds since the last mode change
+// Used for resetting turn indicators
+// after 10 seconds
 unsigned long timeInMode;
 
-// blink this round?
+// For the turn indicators, alternate
+// between two different states.
 boolean blink;
 
 // Initialize the program
@@ -69,22 +72,45 @@ void setup() {
   // Open Serial Communication
   Serial.begin(9600); 
   
-  // Start global counter
+  // Start global time counter
   time = 0;
 
-  // Init mode
+  // Initialize mode
   mode = -1;
   
-  // Init blink
+  // Initialize blink state
   blink = false;
 
 }
 
 void loop() {
   
+  /****************************
+        TIME COUNTING
+   ****************************/
+   
   // update milliseconds 
   // since program started
   time = millis();
+  
+  // milliseconds in current mode
+  timeInMode = time - modeStartedAt;
+  
+  // Reset mode after 10 seconds
+  if ((timeInMode > 1000 * 10) && (mode != -1)) {
+    
+    // Debug
+    Serial.println("10 Seconds in mode. Resetting.");
+
+    // Reset Mode
+     mode = -1;
+     
+     // Reset counter
+     modeStartedAt = time;
+     
+     // Alert user of change
+     beep(800, 90, 0);
+  }
   
   /****************************
             INPUT
@@ -107,8 +133,9 @@ void loop() {
 
     // Reset counter
     modeStartedAt = time;
-     
-    Serial.println("LEFT BUTTON");
+
+    // Change Mode
+    Serial.println("LEFT BUTTON");    
     mode = 0;
     beep(1200, 30, 0);
   }
@@ -118,53 +145,40 @@ void loop() {
     
     // Reset counter
     modeStartedAt = time;
-    
+
+    // Change Mode
     Serial.println("RIGHT BUTTON");
     mode = 1;
     beep(1200, 30, 0);
   }
   
+  // Did the user HOLD "stop". 
+  // "hazards mode" (2) uses a 1,000 ms press
+  // of the stop button, requires the following conditions
+  //  - Middle button pressed
+  //  - Not currently turning
+  //  - Pressed for at least 1 second
+  
+  if (buttons[1] == HIGH && mode == -1 && timeInMode > 1000) {
+  
+     // Change Mode
+     Serial.println("CENTER BUTTON HOLD");
+     mode = 2;
+     
+     // Double Beep
+     beep(600, 90, 60);
+     beep(600, 90, 0);
+
   // Did the user press "reset"?
-  if (buttons[1] == HIGH) {    
+  } else if (buttons[1] == HIGH) {
     
     // Reset counter
     modeStartedAt = time;
-    
+
+    // Change Mode    
     Serial.println("RESET");
     mode = -1;
     beep(1200, 60, 0);
-  }
-  
-  // Did the user HOLD "stop"
-  if (buttons[1] == HIGH && mode == -1) {
-    
-     Serial.println("CENTER BUTTON HOLD");
-     mode = 2;
-     beep(600, 90, 60);
-     beep(600, 90, 0);
-  }
-  
-  /****************************
-        TIME COUNTING
-   ****************************/
-   
-  // milliseconds in current mode
-  timeInMode = time - modeStartedAt;
-  
-  // Reset mode after 10 seconds
-  if ((timeInMode > 1000 * 10) && (mode != -1)) {
-    
-    // Debug
-    Serial.println("10 Seconds in mode. Resetting.");
-
-    // Reset Mode
-     mode = -1;
-     
-     // Reset counter
-     modeStartedAt = time;
-     
-     // Alert user of change
-     beep(800, 90, 0);
   }
 
   /****************************
@@ -221,16 +235,13 @@ void loop() {
   }
   
   // HAZARDS
-  if (mode == 3) {
+  if (mode == 2) {
     
     left[0] = LED_MAX;
     right[0] = LED_MAX;
 
     // Blink state
     if (blink) {
-      
-      left[0] = 150;
-      right[0] = 150;
       
       left[1] = LED_MAX;
       right[1] = LED_MAX;
